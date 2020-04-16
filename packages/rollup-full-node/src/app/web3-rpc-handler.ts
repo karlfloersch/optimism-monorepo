@@ -54,11 +54,13 @@ export class DefaultWeb3Handler
    *
    * @param messageSubmitter The messageSubmitter to use to pass messages to L1. Will be replaced by block submitter.
    * @param web3Provider (optional) The web3 provider to use.
+   * @param numWallets (optional) The number of wallets to create. This dictates the max number of parallel transactions.
    * @returns The constructed Web3 handler.
    */
   public static async create(
     messageSubmitter: L2ToL1MessageSubmitter = new NoOpL2ToL1MessageSubmitter(),
-    web3Provider?: JsonRpcProvider
+    web3Provider?: JsonRpcProvider,
+    numWallets?: number
   ): Promise<DefaultWeb3Handler> {
     log.info(
       `Creating Web3 Handler with provider: ${
@@ -71,16 +73,31 @@ export class DefaultWeb3Handler
     const timestamp = getCurrentTime()
     const l2NodeContext: L2NodeContext = await initializeL2Node(web3Provider)
 
-    const handler = new DefaultWeb3Handler(messageSubmitter, l2NodeContext)
+    const handler = new DefaultWeb3Handler(
+      messageSubmitter,
+      l2NodeContext,
+      numWallets
+    )
     const blockNumber = await l2NodeContext.provider.getBlockNumber()
     handler.blockTimestamps[blockNumber] = timestamp
     return handler
   }
 
+  protected wallets: Wallet[]
+  protected nonces: number[]
+  // We will cycle through wallets and this is the index of the next wallet we should use for sending a tx
+  protected nextWalletToUseIndex: number = 0
+
   protected constructor(
     protected readonly messageSubmitter: L2ToL1MessageSubmitter,
-    protected readonly context: L2NodeContext
-  ) {}
+    protected readonly context: L2NodeContext,
+    numWallets: number = 1000
+  ) {
+    this.wallets = new Array(numWallets)
+      .fill(null)
+      .map(() => Wallet.createRandom().connect(context.provider))
+    this.nonces = new Array(numWallets).fill(-1)
+  }
 
   public getL2ToL1MessagePasserAddress(): Address {
     return this.context.l2ToL1MessagePasser.address
@@ -567,6 +584,7 @@ export class DefaultWeb3Handler
         e
       )
 
+      this.context.executionManager.connect((await this.getNewWalletAndNonce()[0]))
       await this.context.executionManager.incrementNonce(add0x(ovmTx.from))
       log.debug(`Nonce incremented successfully for ${ovmTx.from}.`)
 
@@ -675,8 +693,12 @@ export class DefaultWeb3Handler
     return getCurrentTime()
   }
 
-  protected getNewWallet(): Wallet {
-    return Wallet.createRandom().connect(this.context.provider)
+  protected async getNewWalletAndNonce(): Promise<[Wallet, number]> {
+    const wallet = this.wallets[this.nextWalletToUseIndex]
+    const nonce = (this.nonces[this.nextWalletToUseIndex] !== -1) ? this.nonces[this.nextWalletToUseIndex] : await wallet.getTransactionCount('pending')
+    this.nextWalletToUseIndex =
+      (this.nextWalletToUseIndex + 1) % this.wallets.length
+    return [wallet, nonce]
   }
 
   private async processTransactionEvents(
@@ -839,9 +861,9 @@ export class DefaultWeb3Handler
   private async getSignedTransaction(
     calldata: string,
     to: string,
-    nonce: number = 0,
     gasLimit?: number
   ): Promise<string> {
+    const [wallet, nonce] = await this.getNewWalletAndNonce()
     const tx = {
       nonce,
       gasPrice: 0,
@@ -855,7 +877,7 @@ export class DefaultWeb3Handler
       tx['gasLimit'] = gasLimit
     }
 
-    return this.getNewWallet().sign(tx)
+    return wallet.sign(tx)
   }
 
   /**
