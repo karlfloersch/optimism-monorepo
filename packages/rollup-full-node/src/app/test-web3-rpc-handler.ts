@@ -40,21 +40,23 @@ export class TestWeb3Handler extends DefaultWeb3Handler {
    */
   public static async create(
     messageSubmitter: L2ToL1MessageSubmitter = new NoOpL2ToL1MessageSubmitter(),
-    provider?: JsonRpcProvider
+    provider?: JsonRpcProvider,
+    numWallets?: number
   ): Promise<TestWeb3Handler> {
     const timestamp = getCurrentTime()
     const context: L2NodeContext = await initializeL2Node(provider)
     const blockNumber = await context.provider.getBlockNumber()
-    const handler = new TestWeb3Handler(messageSubmitter, context)
+    const handler = new TestWeb3Handler(messageSubmitter, context, numWallets)
     handler.blockTimestamps[numberToHexString(blockNumber)] = timestamp
     return handler
   }
 
   protected constructor(
     messageSubmitter: L2ToL1MessageSubmitter = new NoOpL2ToL1MessageSubmitter(),
-    context: L2NodeContext
+    context: L2NodeContext,
+    numWallets: number = 1
   ) {
-    super(messageSubmitter, context)
+    super(messageSubmitter, context, numWallets)
   }
 
   /**
@@ -128,6 +130,7 @@ export class TestWeb3Handler extends DefaultWeb3Handler {
       snapShotId,
     ])
     this.timestampIncreaseSeconds = this.timestampIncreaseSnapshots[snapShotId]
+    this.nonces.fill(-1)
     return response
   }
 }
