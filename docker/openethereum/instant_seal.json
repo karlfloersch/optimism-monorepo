@@ -8,8 +8,8 @@
 	"params": {
 		"gasLimitBoundDivisor": "0x0400",
 		"accountStartNonce": "0x0",
-		"maximumExtraDataSize": "0x20",
-		"minGasLimit": "0xffffffff",
+		"maximumExtraDataSize": "0x200000",
+		"minGasLimit": "0xfffffff0",
 		"networkID" : "0x6c",
 		"chainID" : "0x6c",
 		"registrar" : "0x0000000000000000000000000000000000001337",
@@ -19,8 +19,8 @@
 		"eip161dTransition": "0x0",
 		"eip155Transition": "0x0",
 		"eip98Transition": "0x7fffffffffffff",
-		"maxCodeSize": 9245760000,
-    "maxTransactionSize": 9245760000,
+		"maxCodeSize": "0x5760000000",
+    "maxTransactionSize": "0x5760000000",
 		"maxCodeSizeTransition": "0x0",
 		"eip140Transition": "0x0",
 		"eip211Transition": "0x0",
@@ -29,7 +29,7 @@
 		"eip145Transition": "0x0",
 		"eip1014Transition": "0x0",
 		"eip1052Transition": "0x0",
-		"wasmActivationTransition": "0x0"
+		"wasmActivationTransition": "0x7fffffffffffff"
 	},
 	"genesis": {
 		"seal": {

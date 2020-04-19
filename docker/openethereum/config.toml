@@ -1,6 +1,6 @@
 [parity]
 no_consensus = true
-chain = "./instant_seal.json"
+chain = "/home/parity/instant_seal.json"
 
 [mining]
 reseal_min_period = 0
