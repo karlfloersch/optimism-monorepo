@@ -92,4 +92,4 @@ echo "Starting Geth..."
 # USED FOR TESTING
 # geth --datadir /testing --nousb --verbosity 0 init /etc/genesis.json 2> /dev/null;
 # geth --dev --datadir /testing --rpc --rpcaddr 0.0.0.0  --rpcvhosts=* --rpcapi 'eth,net' --rpcport 9545 --networkid 108 --nodiscover --nousb --config /etc/geth-config.toml --targetgaslimit '9000000000000' --verbosity 5 console
-geth --dev --datadir /testing --rpc --rpcaddr 0.0.0.0  --rpcvhosts=* --rpcport 9545 --networkid 108
+geth --dev --datadir /testing --rpc --rpcaddr 0.0.0.0  --rpcvhosts=* --rpcport 9545 --networkid 108 --rpcapi 'eth,net' --gasprice '0' console

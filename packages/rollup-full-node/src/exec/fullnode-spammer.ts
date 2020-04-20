@@ -120,7 +120,7 @@ export const beginSpam = async () => {
   const wallet = getWallet(httpProvider)
   const simpleStorage = await deploySimpleStorage(wallet)
 
-  const numSpamTxs = 1492
+  const numSpamTxs = 5000
   log.info(`Spamming ${numSpamTxs} times`)
   // Now spam 1492 times
   for (let i = 0; i < numSpamTxs; i++) {
