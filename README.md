@@ -7,7 +7,8 @@ Open two terminals. In the first we will build geth:
 ```
 $ cd docker/geth # this is 
 $ docker build .
-$ docker run -it -p 9545:9545 DOCKER_IMAGE
+$ # if you want to persist geth, make a directory `geth-data` which we'll mount
+$ docker run -it -p 9545:9545 -v "$(pwd)"/geth-data:/root/.ethereum DOCKER_IMAGE
 ```
 
 This terminal we can spin up a full node:
